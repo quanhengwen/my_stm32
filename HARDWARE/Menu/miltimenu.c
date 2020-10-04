@@ -1,0 +1,524 @@
+/****************************************************************************************
+* 文件名：MILTIMENU.C
+* 功能：菜单显示及操作(图标可选菜单)。
+* 作者：Mr_Q
+* 日期：2020.04.08
+* 备注：此程序构架可任意填充所需菜单显示内容及对应执行程序，快速完成菜单项的构建。
+****************************************************************************************/
+#include "miltimenu.h"  
+#include "fontupd.h" 
+#include "config.h" 
+
+/*菜单校零图标 像素32x32*/
+const unsigned char Zero[]={0x00,0x0F,0xF0,0x00,0x00,0x78,0x1E,0x00,0x01,0xC0,0x03,0x80,0x03,0x00,0x00,0xC0,
+0x04,0x00,0x00,0x20,0x08,0x00,0x00,0x10,0x10,0x00,0x00,0x08,0x37,0x9E,0x78,0xCC,
+0x20,0x90,0x49,0x24,0x61,0x10,0x49,0x26,0x43,0x1E,0x71,0x22,0x42,0x10,0x49,0x22,
+0xC4,0x10,0x49,0x23,0xC7,0x9E,0x48,0xC3,0xC0,0x00,0x00,0x03,0xC0,0x00,0x00,0x03,
+0xC0,0x07,0xE0,0x03,0xC0,0x0F,0xF0,0x03,0xFF,0x9C,0x39,0xFF,0xFF,0x98,0x19,0xFF,
+0x7F,0x98,0x19,0xFE,0x7F,0x98,0x19,0xFE,0x60,0x18,0x18,0x0E,0x30,0x18,0x18,0x0C,
+0x30,0x18,0x18,0x1C,0x18,0x18,0x18,0x18,0x0C,0x1C,0x38,0x30,0x04,0x0F,0xF0,0x20,
+0x03,0x07,0xE0,0xC0,0x01,0xC0,0x03,0x80,0x00,0x78,0x1E,0x00,0x00,0x0F,0xF0,0x00,};
+/*菜单恢复出厂设置图标 像素32x32*/
+const unsigned char Recover[]={0x00,0x00,0x00,0x00,0x00,0x1F,0xF8,0x00,0x00,0x70,0x0E,0x00,0x01,0xC0,0x03,0x80,
+0x03,0x00,0x00,0xC0,0x06,0x00,0x00,0x60,0x0C,0x00,0x00,0x30,0x18,0x00,0x40,0x18,
+0x10,0x00,0xC0,0x08,0x30,0x01,0x80,0x0C,0x20,0x03,0xE0,0x04,0x60,0x01,0xB0,0x06,
+0x40,0x00,0xD8,0x02,0x40,0x00,0x4C,0x02,0x40,0x00,0x04,0x02,0x40,0x20,0x04,0x02,
+0x40,0x20,0x04,0x02,0x40,0x20,0x0C,0x02,0x40,0x30,0x08,0x02,0x40,0x18,0x18,0x02,
+0x60,0x0E,0x70,0x06,0x20,0x07,0xC0,0x04,0x30,0x00,0x00,0x0C,0x10,0x00,0x00,0x08,
+0x18,0x00,0x00,0x18,0x0C,0x00,0x00,0x30,0x06,0x00,0x00,0x60,0x03,0x00,0x00,0xC0,
+0x01,0xC0,0x03,0x80,0x00,0x70,0x0E,0x00,0x00,0x1F,0xF8,0x00,0x00,0x00,0x00,0x00,};
+/*菜单标定图标 像素32x32*/
+const unsigned char Calibra[]={0x00,0x00,0x00,0x00,0x00,0x00,0x80,0x00,0x38,0x00,0x80,0x1C,0x20,0x00,0x80,0x04,
+0x20,0x00,0x80,0x04,0x00,0x1F,0xF8,0x00,0x00,0x30,0x8E,0x00,0x00,0xC0,0x87,0x00,
+0x01,0x80,0x81,0x80,0x01,0x00,0x80,0x80,0x03,0x00,0x80,0xC0,0x02,0x00,0x00,0x40,
+0x06,0x00,0x00,0x60,0x04,0x00,0x00,0x20,0x04,0x01,0x80,0x20,0x04,0x02,0x40,0x20,
+0x7F,0xC2,0x47,0xFE,0x04,0x01,0x80,0x20,0x04,0x00,0x00,0x20,0x06,0x00,0x00,0x60,
+0x02,0x00,0x00,0x40,0x03,0x00,0x80,0xC0,0x01,0x00,0x80,0x80,0x01,0x80,0x81,0x80,
+0x00,0xC0,0x87,0x00,0x00,0x30,0x8E,0x00,0x00,0x1F,0xF8,0x00,0x20,0x00,0x80,0x04,
+0x20,0x00,0x80,0x04,0x38,0x00,0x80,0x1C,0x00,0x00,0x80,0x00,0x00,0x00,0x00,0x00};
+/*菜单报警图标 像素32x32*/
+const unsigned char Alarm[]={0x00,0x00,0x00,0x00,0x0F,0xFF,0xFF,0xF0,0x0F,0xFF,0xFF,0xF0,0x08,0x00,0x00,0x10,
+0x08,0x00,0x00,0x10,0x0C,0x00,0x00,0x30,0x0F,0xFF,0xFF,0xF0,0x0C,0x00,0x00,0x30,
+0x08,0x00,0x00,0x10,0x08,0x00,0x00,0x10,0x08,0x00,0x00,0x10,0x08,0x00,0x00,0x10,
+0x08,0x00,0x00,0x10,0x0C,0x03,0xC0,0x30,0x0F,0xFF,0xFF,0xF0,0x0F,0xFE,0x7F,0xF0,
+0x0F,0xFE,0x7F,0xF0,0x08,0x00,0x00,0x10,0x0C,0x00,0x00,0x30,0x0C,0x0F,0xF0,0x30,
+0x06,0x1C,0x38,0x60,0x03,0x70,0x0E,0xC0,0x07,0xF6,0x6F,0xE0,0x3D,0xE6,0x67,0xBC,
+0x38,0xE0,0x07,0x1C,0x3C,0x66,0x66,0x3C,0x0C,0xF6,0x6F,0x30,0x07,0xF0,0x0F,0xE0,
+0x03,0x9C,0x39,0xC0,0x01,0x0F,0xF0,0x80,0x00,0x03,0xC0,0x00,0x00,0x00,0x00,0x00,};
+/*菜单主页图标 像素32x32*/
+const unsigned char HomePage[]={0x00,0x01,0x80,0x00,0x00,0x07,0xE0,0x00,0x00,0x0F,0xF0,0x00,0x00,0x3F,0xFC,0x00,
+0x00,0xE0,0x07,0x00,0x01,0xC0,0x03,0x80,0x03,0x80,0x01,0xC0,0x07,0x00,0x00,0xE0,
+0x0E,0x00,0x00,0x70,0x1C,0x00,0x00,0x38,0x38,0x00,0x00,0x1C,0x30,0x00,0x00,0x0C,
+0x30,0x00,0x00,0x0C,0x30,0x00,0x00,0x0C,0x30,0x00,0x00,0x0C,0x30,0x00,0x00,0x0C,
+0x30,0x1F,0xF8,0x0C,0x30,0x3F,0xFC,0x0C,0x30,0x30,0x0C,0x0C,0x30,0x30,0x0C,0x0C,
+0x30,0x30,0x0C,0x0C,0x30,0x30,0x0C,0x0C,0x30,0x30,0x0C,0x0C,0x30,0x30,0x0C,0x0C,
+0x30,0x30,0x0C,0x0C,0x30,0x30,0x0C,0x0C,0x30,0x30,0x0C,0x0C,0x30,0x30,0x0C,0x0C,
+0x3F,0xFF,0xFF,0xFC,0x3F,0xFF,0xFF,0xFC,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,};
+/*菜单时间设置图标 像素32x32*/
+const unsigned char Calendar[]={0x08,0x00,0x04,0x00,0x0C,0x00,0x04,0x00,0x0C,0x00,0x04,0x00,0x0C,0x00,0x04,0x00,
+0x6D,0xFF,0xE5,0x80,0xE1,0xFF,0xE5,0xC0,0xF3,0xFF,0xF1,0xC0,0xFF,0xFF,0xFF,0xC0,
+0xFF,0xFF,0xFF,0xC0,0xFF,0xFF,0xFF,0xC0,0xC0,0x00,0x00,0xC0,0xC0,0x00,0x00,0xC0,
+0xCF,0x38,0x70,0xC0,0xCF,0x38,0x70,0x00,0xCF,0x38,0x70,0x00,0xC0,0x00,0x00,0x00,
+0xC0,0x00,0x00,0x00,0xC0,0x00,0x07,0xF0,0xC0,0x00,0x1E,0x38,0xCF,0x38,0x38,0x0C,
+0xCF,0x38,0x30,0x06,0xCF,0x38,0x61,0x02,0xC0,0x00,0x61,0x03,0xC0,0x00,0x41,0x03,
+0xFF,0xF8,0x41,0xE3,0x7F,0xF8,0x41,0xF3,0x00,0x00,0x60,0x03,0x00,0x00,0x60,0x06,
+0x00,0x00,0x30,0x0E,0x00,0x00,0x1C,0x1C,0x00,0x00,0x0F,0xF0,0x00,0x00,0x03,0xE0,};
+
+const unsigned char Info[]={0x00,0x00,0x00,0x00,0x07,0xFF,0xFF,0xE0,0x1F,0xFF,0xFF,0xF8,0x3F,0xFF,0xFF,0xFC,
+0x30,0x00,0x00,0x0C,0x30,0x00,0x00,0x0C,0x70,0x00,0x00,0x0E,0x70,0x00,0x00,0x0E,
+0x70,0x01,0x80,0x0E,0x70,0x01,0x80,0x0E,0x70,0x00,0x00,0x0E,0x70,0x00,0x00,0x0E,
+0x70,0x01,0x80,0x0E,0x70,0x01,0x80,0x0E,0x70,0x01,0x80,0x0E,0x70,0x01,0x80,0x04,
+0x70,0x01,0x80,0x04,0x70,0x01,0x80,0x00,0x70,0x01,0x80,0x00,0x70,0x01,0x80,0x00,
+0x70,0x00,0x00,0x04,0x70,0x00,0x00,0x0C,0x30,0x00,0x00,0x0C,0x38,0x00,0x00,0x1C,
+0x1F,0xF8,0x1F,0xF8,0x0F,0xFC,0x3F,0xF0,0x00,0x0C,0x30,0x00,0x00,0x0E,0x70,0x00,
+0x00,0x07,0xE0,0x00,0x00,0x03,0xC0,0x00,0x00,0x01,0x80,0x00,0x00,0x00,0x00,0x00,};
+
+const unsigned char Expand[]={0x00,0x00,0x00,0x00,0x00,0x00,0x03,0x00,0x00,0x00,0x04,0x80,0x00,0x00,0x3C,0xF0,
+0x00,0x00,0x40,0x08,0x00,0x00,0x47,0x88,0x00,0x00,0x48,0x48,0x31,0xFF,0xD7,0xAC,
+0x72,0x00,0x14,0xA2,0x32,0xFC,0x14,0xA2,0x22,0xFE,0xD7,0xAC,0x22,0xFC,0x48,0x48,
+0x22,0x00,0x47,0x88,0x21,0xFF,0xC0,0x08,0x20,0x80,0x3C,0xF0,0x20,0x80,0x3C,0x80,
+0x23,0x00,0x00,0xC0,0x3E,0x7C,0x02,0x40,0x02,0xFE,0x07,0x40,0x1E,0xFE,0x07,0x40,
+0x32,0x00,0x00,0x40,0x23,0xFF,0xFF,0xC0,0x20,0x80,0x01,0x00,0x20,0x80,0x01,0x00,
+0x21,0xFF,0xFF,0x80,0x22,0x00,0x00,0x40,0x22,0xFE,0x03,0x40,0x22,0xFE,0x07,0x40,
+0x32,0xFC,0x02,0x40,0x33,0x00,0x00,0xC0,0x01,0xFF,0xFF,0x80,0x00,0x00,0x00,0x00,};
+
+//private typedef
+typedef void (*tMenuFunc)(void);     //函数指针，用作调用函数和做函数的参数
+typedef struct sMenuItem *tMenuItem; //指向子菜单结构体的指针
+typedef struct sMenu *tMenu;     	   //指向主菜单结构体的指针
+
+/*private define*/
+#define  MAX_MENU_LEVELS 4   //声明最大菜单级数为4
+
+#define countof(a)  (sizeof(a) / sizeof(*(a)))
+	
+/* Private macro -------------------------------------------------------------*/
+/* Private variables ---------------------------------------------------------*/
+u8 MenuItemIndex = 0,nMenuLevel =0,nMenuPage=0; //定义菜单条目索引号、菜单级数变量
+u8 ItemNumb[MAX_MENU_LEVELS];        //当前菜单选项存储变量
+u8 menu_sta=0;											 //菜单是否使用图标  0无，1有	
+tMenuItem psMenuItem, psCurrentMenuItem;
+tMenu psPrevMenu[MAX_MENU_LEVELS];   			//上一个菜单
+tMenu psCurrentMenu;    			 			//当前菜单结构体声明
+
+/*菜单支持图标模式，使用时主菜单Smenu对应SmenuItem子菜单必须全调用图片地址，或全为文字格式。混用必出错*/
+struct sMenuItem
+{
+	u8* pszTitle;   		 				//菜单条目名称
+	
+	tMenuFunc pfMenuFunc;				//当前选项对应功能程序
+	tMenuFunc pfUpDownMenuFunc;			//退出当前界面对应功能程序
+	tMenu psSubMenu;   					//子菜单
+	
+	u8* bmp;			  						//菜单对应图标地址32x32分辨率	
+};
+
+struct sMenu
+{
+	u8* pszTitle;			  				//菜单项名称
+	tMenuItem psItems;					//菜单对应选项结构体
+	u8 nItems;									//菜单对应选项条目数
+};
+
+void IdleFunc(void)
+{
+	/*Nothing to execute:return*/
+	return;	
+}
+
+//void Menu_KeyAnction(u8 key)
+//{
+//	if(key==KEY_S1_PRES_SHORT) 				DownFunc();
+//	else if(key==KEY_S2_PRES_SHORT) 		SelFunc();
+//}
+
+/*------------------------------ 4级菜单 -------------------------------*/
+
+
+/*------------------------------ 3级菜单 -------------------------------*/
+struct sMenuItem RestoreMenuItems[] = {{" 1.重置         ", IdleFunc, IdleFunc},
+                                       {" 3.返回         ", ReturnFunc, IdleFunc},};
+
+struct sMenu RestoreMenu =  {"     恢 复 出 厂     ", RestoreMenuItems, countof(RestoreMenuItems)};
+
+struct sMenuItem SpecialMenuItems[] = {	{" 1.定时存储     ", IdleFunc, IdleFunc},
+                                        {" 2.跌倒报警     ", IdleFunc, IdleFunc},
+                                        {" 3.返回         ", ReturnFunc, IdleFunc},};
+
+struct sMenu SpecialMenu =  {"     拓 展 功 能     ", SpecialMenuItems, countof(SpecialMenuItems)};
+
+
+struct sMenuItem CommMenuItems[] = {		{" 1.优盘模式     ", IdleFunc, IdleFunc},
+                                        {" 2.串口调试     ", IdleFunc, IdleFunc},
+                                        {" 3.返回         ", ReturnFunc, IdleFunc},};
+struct sMenu CommMenu = 		{"     通 讯 模 式     ", CommMenuItems, countof(CommMenuItems)};
+
+
+struct sMenuItem CalendarMenuItems[] = {{" 1.时钟设置     ", IdleFunc, IdleFunc},
+                                        {" 2.日期设置     ", IdleFunc, IdleFunc},
+                                        {" 3.返回         ", ReturnFunc, IdleFunc},};
+struct sMenu CalendarMenu = {"     时 间 设 置     ", CalendarMenuItems, countof(CalendarMenuItems)};
+
+
+struct sMenuItem AlarmMenuItems[] = {	{" 1.CO2报警      ", IdleFunc, IdleFunc},
+                                        {" 2.CH4报警      ", IdleFunc, IdleFunc},
+                                        {" 3.返回         ", ReturnFunc, IdleFunc},};													
+struct sMenu AlarmMenu = 	 	{"     报 警 设 置     ", AlarmMenuItems, countof(AlarmMenuItems)};
+
+struct sMenuItem CalibraMenuItems[] = {	{" 1.CO2标定      ", IdleFunc, IdleFunc},
+                                        {" 2.CH4标定      ", IdleFunc, IdleFunc},
+                                        {" 3.返回         ", ReturnFunc, IdleFunc},};														
+struct sMenu CalibraMenu = {"     设 备 标 定     ", CalibraMenuItems, countof(CalibraMenuItems)};
+
+struct sMenuItem ZeroMenuItems[] = {	{" 1.CO2校零      ", IdleFunc, IdleFunc},
+                                        {" 2.CH4校零      ", IdleFunc, IdleFunc},
+                                        {" 3.返回         ", ReturnFunc, IdleFunc},};													
+struct sMenu ZeroMenu =  {"     设 备 校 零     ", ZeroMenuItems, countof(ZeroMenuItems)};
+
+///*------------------------------ 2级菜单 -------------------------------*/
+struct sMenuItem MainMenuItems[] = {				//主菜单条目
+	{".设备校零 ", IdleFunc,  IdleFunc, &ZeroMenu,		  (u8*)Zero},
+	{".设备标定 ", IdleFunc,  IdleFunc, &CalibraMenu,  (u8*)Calibra},	
+	{".报警设置 ", IdleFunc,  IdleFunc, &AlarmMenu,    (u8*)Alarm},
+//	{".通讯模式 ", IdleFunc,  IdleFunc, &CommMenu,     (u8*)PC},	
+	{".拓展功能 ", IdleFunc,  IdleFunc, &SpecialMenu,   (u8*)Expand},
+	{".时间设置 ", IdleFunc,  IdleFunc, &CalendarMenu, (u8*)Calendar},	
+	{".设备信息 ", IdleFunc, IdleFunc, NULL,				   (u8*)Info},
+	{".恢复出厂 ", IdleFunc,  IdleFunc, &RestoreMenu,	 (u8*)Recover},
+	{".返回主页 ", ReturnFunc,IdleFunc, NULL,				   (u8*)HomePage}};
+													
+struct sMenu MainMenu =  {"     设 备 管 理     ", MainMenuItems, countof(MainMenuItems)};
+
+/*------------------------------ Menu level 1 -------------------------------*/
+struct sMenuItem SeletMenuItems[] = {				//主菜单条目
+	{" 1.设备管理     ", EnterMenu, IdleFunc },
+	{" 2.返回主页     ", IdleFunc, IdleFunc}};													
+struct sMenu SeletMenu = {"     功 能 选 择     ", SeletMenuItems, countof(SeletMenuItems)};
+
+/*******************************************************************************
+* Function Name  : Menu_Init							//菜单初始化
+* Description    : Initializes the navigation menu.
+* Input          : None
+* Output         : None
+* Return         : None
+*******************************************************************************/
+void Menu_Init(void)   //菜单初始化
+{
+	psCurrentMenu = &SeletMenu;							//当前菜单赋值
+	psPrevMenu[nMenuLevel] = psCurrentMenu; 			//上一级菜单赋值
+	psMenuItem = SeletMenuItems;						//当前菜单项目
+}
+
+/*******************************************************************************
+* Function Name  : DisplayMenu					//菜单显示程序
+* Description    : Displays the current menu.   显示当前菜单
+* Input          : None
+* Output         : None
+* Return         : None
+*******************************************************************************/
+void DisplayMenu(void)
+{
+		u32 Line = 0, index = 0;
+
+		tMenuItem psMenuItem2;
+	
+		GUI_ClearSCR();     //清屏
+
+		GUI_PutHZ(80,Line+2, psCurrentMenu->pszTitle,FONT16);   //显示菜单名称
+
+		Line += 26;																					 		//增加行数
+
+		if(nMenuPage<(psCurrentMenu->nItems/MAX_PAGE_LINES))
+		{
+				while(!(index >= MAX_PAGE_LINES))       //依次显示当前菜单条目	
+				{
+					psMenuItem2 = &(psCurrentMenu->psItems[(nMenuPage*MAX_PAGE_LINES)+index]);
+					if(psMenuItem2->bmp != NULL)
+					{
+						menu_sta = 1;
+						GUI_PutHZ(120,Line, psMenuItem2->pszTitle,FONT24); 
+						index++;
+						Line += 26;
+					}
+					else{
+							//赋值当前条目名称到
+						menu_sta = 0;
+						GUI_PutHZ(0,Line, psMenuItem2->pszTitle,FONT24);    //显示当前条目名称 */
+						index++;
+						Line += 26;
+					}					
+				}		
+		}else{
+			 while(!(index >= ((psCurrentMenu->nItems)%MAX_PAGE_LINES)))       //依次显示当前菜单条目	
+				{
+					psMenuItem2 = &(psCurrentMenu->psItems[(nMenuPage*MAX_PAGE_LINES)+index]);
+					if(psMenuItem2->bmp != NULL)
+					{
+						menu_sta = 1;
+						GUI_PutHZ(120,Line, psMenuItem2->pszTitle,FONT24);    //显示当前条目名称 */
+						index++;
+						Line += 26;
+					}
+					else{
+						menu_sta = 0;
+						GUI_PutHZ(0,Line, psMenuItem2->pszTitle,FONT24);    //显示当前条目名称 */
+						index++;
+						Line += 26;
+					}
+				}		
+		}
+	    /* Get the current menu */
+	    psMenuItem = &(psCurrentMenu->psItems[MenuItemIndex]);		//获取当前菜单
+	    GUI_ExchangeColor();										//显示色与背景色交换	
+		if(menu_sta==1)
+		{
+		  GUI_LoadPic1(8,24,psMenuItem->bmp,32,32 );
+		  GUI_PutHZ(120,((MenuItemIndex%MAX_PAGE_LINES + 1) * 26), psMenuItem->pszTitle,FONT24);  //突出显示当前选项条目
+		}else{
+		  GUI_PutHZ(0,((MenuItemIndex%MAX_PAGE_LINES + 1) * 26), psMenuItem->pszTitle,FONT24);  //突出显示当前选项条目
+		  GUI_PutHZ(166,((MenuItemIndex%MAX_PAGE_LINES + 1) * 26),"↘",FONT24);
+		}
+
+		GUI_ExchangeColor();									// 显示色与背景色交换
+		GUI_Line(1,20,319,20,WHITE);
+		GUI_Rectangle(0,0,319,239,WHITE);
+		
+//		FuncSelt = MenuPage;									/*返回菜单选项*/
+}
+/*******************************************************************************
+* 函数名称  : SelFunc()
+* 描述      :当确认按键按下时，响应动作
+*                  
+* 输入      : 无
+* 输出      : 无
+* 返回      : 无
+*******************************************************************************/
+void SelFunc(void)
+{
+	  psCurrentMenuItem = psMenuItem;
+
+	  if(psMenuItem->psSubMenu != '\0')
+	  {
+			/* Update the current Item by the submenu */
+			MenuItemIndex = 0;
+			nMenuPage = 0;			//菜单页数归零
+			psCurrentMenu = psMenuItem->psSubMenu;
+			psMenuItem = &(psCurrentMenu->psItems)[MenuItemIndex];
+			DisplayMenu();
+			nMenuLevel++;
+			psPrevMenu[nMenuLevel] = psCurrentMenu;
+	  } 
+	  psCurrentMenuItem->pfMenuFunc();
+}
+/*******************************************************************************
+* 函数名称  : UpFunc()
+* 描述      :当向上按键按下时，响应动作
+*                  
+* 输入      : 无
+* 输出      : 无
+* 返回      : 无
+*******************************************************************************/
+void UpFunc(void)
+{
+	psMenuItem = &psCurrentMenu->psItems[MenuItemIndex];
+
+	if(menu_sta == 1)	GUI_PutHZ(120,((MenuItemIndex%MAX_PAGE_LINES + 1) * 26), psMenuItem->pszTitle,FONT24);
+	else GUI_PutHZ(0,((MenuItemIndex%MAX_PAGE_LINES + 1) * 26), psMenuItem->pszTitle,FONT24);
+		
+	if(MenuItemIndex > 0)
+	{
+		MenuItemIndex--;
+//		if(nMenuPage!=(MenuItemIndex/MAX_PAGE_LINES))    //菜单当前页数
+//		{
+//			nMenuPage=(MenuItemIndex/MAX_PAGE_LINES);		 
+//			DisplayMenu();								//重新刷新菜单
+//		} 
+	}
+	else
+	{
+		MenuItemIndex = psCurrentMenu->nItems - 1;
+//		nMenuPage=(MenuItemIndex/MAX_PAGE_LINES);
+//		DisplayMenu();											//重新刷新菜单
+	}
+	psMenuItem = &psCurrentMenu->psItems[MenuItemIndex];
+	GUI_ExchangeColor();									// 显示色与背景色交换
+
+	if(menu_sta==1)
+	{
+		GUI_LoadPic1(8,24,psMenuItem->bmp,32,32 );
+		GUI_PutHZ(120,((MenuItemIndex%MAX_PAGE_LINES + 1) * 26), psMenuItem->pszTitle,FONT24);  //突出显示当前选项条目
+	}else{
+		GUI_PutHZ(0,((MenuItemIndex%MAX_PAGE_LINES + 1) * 26), psMenuItem->pszTitle,FONT24);  //突出显示当前选项条目
+		GUI_PutHZ(166,((MenuItemIndex%MAX_PAGE_LINES + 1) * 26),"↘",FONT24);
+	}
+	GUI_ExchangeColor();									// 显示色与背景色交换
+	GUI_Line(1,20,319,20,WHITE);
+	GUI_Rectangle(0,0,319,239,WHITE);
+	ItemNumb[nMenuLevel] = MenuItemIndex;
+}
+/*******************************************************************************
+* 函数名称  : DownFunc()
+* 描述      :当向下按键按下时，响应动作
+*                  
+* 输入      : 无
+* 输出      : 无
+* 返回      : 无
+*******************************************************************************/
+void DownFunc(void)
+{
+	  psMenuItem = &psCurrentMenu->psItems[MenuItemIndex];
+
+	  if(menu_sta == 1)	GUI_PutHZ(120,((MenuItemIndex%MAX_PAGE_LINES + 1) * 26), psMenuItem->pszTitle,FONT24);
+	  else GUI_PutHZ(0,((MenuItemIndex%MAX_PAGE_LINES + 1) * 26), psMenuItem->pszTitle,FONT24);
+
+	  /* Test on the MenuItemIndex value before incrementing it */
+	  if(MenuItemIndex >= ((psCurrentMenu->nItems)-1))
+	  {
+			 MenuItemIndex = 0;
+	//			 nMenuPage=0;
+	//			 DisplayMenu();                  		 //重新刷新菜单
+	  }
+	  else
+	  {
+			 MenuItemIndex++;
+	//			 if(nMenuPage!=(MenuItemIndex/MAX_PAGE_LINES))    //菜单当前页数
+	//			 {
+	//					nMenuPage=(MenuItemIndex/MAX_PAGE_LINES);		 
+	//				 	DisplayMenu();									//重新刷新菜单
+	//			 } 
+	  }
+	/* Get the current menu */
+	psMenuItem = &(psCurrentMenu->psItems[MenuItemIndex]);
+	GUI_ExchangeColor();									// 显示色与背景色交换
+	if(menu_sta==1)
+	{
+		GUI_LoadPic1(8,24,psMenuItem->bmp,32,32 );
+		GUI_PutHZ(120,((MenuItemIndex%MAX_PAGE_LINES + 1) * 26), psMenuItem->pszTitle,FONT24);  //突出显示当前选项条目
+	}else{
+		GUI_PutHZ(0,((MenuItemIndex%MAX_PAGE_LINES + 1) * 26), psMenuItem->pszTitle,FONT24);  //突出显示当前选项条目
+		GUI_PutHZ(166,((MenuItemIndex%MAX_PAGE_LINES + 1) * 26),"↘",FONT24);
+	}
+	GUI_ExchangeColor();									// 显示色与背景色交换
+	GUI_Line(1,20,319,20,WHITE);
+	GUI_Rectangle(0,0,319,239,WHITE);
+	ItemNumb[nMenuLevel] = MenuItemIndex;
+}
+/*******************************************************************************
+* Function Name  : ReturnFunc
+* Description    : This function is executed when the "RETURN" menu is selected.
+* Input          : None
+* Output         : None
+* Return         : None
+*******************************************************************************/
+void ReturnFunc(void)
+{
+	  psMenuItem->pfUpDownMenuFunc();
+
+	  if(nMenuLevel == 0)
+	  {
+			nMenuLevel++;
+	  }
+	  psCurrentMenu = psPrevMenu[nMenuLevel-1];
+	  psMenuItem = &psCurrentMenu->psItems[0];
+	  ItemNumb[nMenuLevel] = 0;
+	  MenuItemIndex = 0;
+	  nMenuLevel--;
+
+	  if(nMenuLevel != 0)
+	  {
+			DisplayMenu();
+	  }
+	  else
+	  {	
+//			GUI_LoadPic(0,0,(uint8*)MAIN,128,64);
+			menu_sta = 0;   //初始化菜单图标状态，防止花屏
+			nMenuPage= 0;		//初始化菜单页数，防止花屏
+//			FuncSelt=MainPage;
+	  }
+}
+
+///*******************************************************************************
+//* Function Name  : Buffercmp
+//* Description    : Compares two buffers.
+//* Input          : - pBuffer1, pBuffer2: buffers to be compared.
+//*                : - BufferLength: buffer's length
+//* Output         : None
+//* Return         : 0: pBuffer1 identical to pBuffer2
+//*                  1: pBuffer1 differs from pBuffer2
+//*******************************************************************************/
+//static u8 Buffercmp(u8* pBuffer1, u8* pBuffer2, u16 BufferLength)
+//{
+//  while(BufferLength--)
+//  {
+//    if(*pBuffer1 != *pBuffer2)
+//    {
+//      return 1;
+//    }
+
+//    pBuffer1++;
+//    pBuffer2++;
+//  }
+
+//  return 0;
+//}
+void EnterMenu(void)
+{
+		MenuItemIndex = 0;
+		nMenuPage = 0;			//菜单页数归零
+		psCurrentMenu = &MainMenu;
+		psMenuItem = &(psCurrentMenu->psItems)[MenuItemIndex];
+		DisplayMenu();
+		nMenuLevel++;
+		psPrevMenu[nMenuLevel] = psCurrentMenu;
+//		FuncSelt = MenuPage;
+}
+/**************************************************
+* 名称：Warn_Titel()
+* 功能：警告提示窗口
+* 入口参数：uint8 *dat
+* 出口参数：无
+* 说明：系统状态提示窗口
+***************************************************/
+void Warn_Titel(unsigned char *dat)
+{
+	WINDOWS Warn_Win;
+	/* 显示演示窗口 */
+	Warn_Win.x = 25;
+	Warn_Win.y = 8;
+	Warn_Win.with = 78;
+	Warn_Win.hight = 46;
+	Warn_Win.title = (unsigned char *)"  WARNING! ";
+	Warn_Win.state = NULL;
+	Warn_Win.sta = 1;
+	/*开机清屏，避免出现花屏现象*/
+	GUI_ClearSCR();
+	GUI_WindowsDraw(&Warn_Win);
+	GUI_PutHZ(34,32,dat,FONT16);
+}
+
+/**************************************************
+* 名称：Show_Details()
+* 功能：内容显示窗口界面
+* 入口参数：uint8 *dat
+* 出口参数：无
+* 说明：系统状态提示窗口
+***************************************************/
+void Show_Details(unsigned char *dat)
+{
+	WINDOWS Warn_Win;
+	/* 显示演示窗口 */
+	Warn_Win.x = 0;
+	Warn_Win.y = 0;
+	Warn_Win.with = 320;
+	Warn_Win.hight = 240;
+	Warn_Win.title = (unsigned char *)dat;
+	Warn_Win.state = NULL;
+	Warn_Win.sta = 1;
+	/*开机清屏，避免出现花屏现象*/
+	GUI_ClearSCR();
+	GUI_WindowsDraw(&Warn_Win);
+}
+
+
+/***************************************End File Mr_Q_2019-02-27**********************************************/
+
